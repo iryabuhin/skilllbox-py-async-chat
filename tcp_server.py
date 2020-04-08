@@ -25,7 +25,7 @@ class ServerProtocol(asyncio.Protocol):
 
                 for user in self.server.clients:
                     if user.login == login:
-                        self.transport.write('This login is already taken, try another one!'.encode())
+                        self.transport.write('This login is already taken, try another one!\n'.encode())
                         return
 
                 self.login = login
@@ -36,19 +36,18 @@ class ServerProtocol(asyncio.Protocol):
 
     def connection_lost(self, exception):
         self.server.clients.remove(self)
+        print('Client disconnected')
 
     def connection_made(self, transport: transports.Transport):
         self.server.clients.append(self)
         self.transport = transport
         print('New connection established')
 
-
     def send_message(self, content: str):
-        msg = f'{self.login}: {content.rstrip()}\n'
+        message = f'{self.login}: {content.rstrip()}
 
         for user in self.server.clients:
-            print(f'sent message to {user.login} from {self.login}')
-            user.transport.write(msg.encode())
+            user.transport.write(message.encode())
 
 
 class Server:
@@ -93,6 +92,7 @@ def main():
         asyncio.run(process.start())
     except KeyboardInterrupt:
         print('\nServer stopped manually (keyboard interrupted)')
+
 
 if __name__ == '__main__':
     main()
